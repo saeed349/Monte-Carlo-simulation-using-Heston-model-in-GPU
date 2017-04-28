@@ -1,26 +1,18 @@
-﻿Build started 4/28/2017 5:55:05 PM.
+﻿Build started 4/28/2017 7:18:58 PM.
      1>Project "U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
+     1>u:\monte-carlo-simulation-using-heston-model-in-gpu\visual studio 2013\projects\montecarlo_heston-cpu\montecarlo_heston-cpu\main.cpp(29): warning C4018: '<' : signed/unsigned mismatch
+     1>u:\monte-carlo-simulation-using-heston-model-in-gpu\visual studio 2013\projects\montecarlo_heston-cpu\montecarlo_heston-cpu\main.cpp(33): warning C4018: '<' : signed/unsigned mismatch
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.lib" /MACHINE:X86 Debug\correlated_snd.obj
-         Debug\heston_mc.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.lib" /MACHINE:X86 Debug\heston_mc.obj
          Debug\main.obj
          Debug\option.obj
          Debug\payoff.obj
-         Debug\statistics.obj
-     1>correlated_snd.obj : error LNK2019: unresolved external symbol "public: __thiscall StandardNormalDistribution::StandardNormalDistribution(void)" (??0StandardNormalDistribution@@QAE@XZ) referenced in function "public: __thiscall CorrelatedSND::CorrelatedSND(double,class std::vector<double,class std::allocator<double> > const *)" (??0CorrelatedSND@@QAE@NPBV?$vector@NV?$allocator@N@std@@@std@@@Z)
-     1>correlated_snd.obj : error LNK2019: unresolved external symbol "public: virtual __thiscall StandardNormalDistribution::~StandardNormalDistribution(void)" (??1StandardNormalDistribution@@UAE@XZ) referenced in function "public: virtual __thiscall CorrelatedSND::~CorrelatedSND(void)" (??1CorrelatedSND@@UAE@XZ)
-     1>correlated_snd.obj : error LNK2001: unresolved external symbol "public: virtual double __thiscall StandardNormalDistribution::pdf(double const &)const " (?pdf@StandardNormalDistribution@@UBENABN@Z)
-     1>correlated_snd.obj : error LNK2001: unresolved external symbol "public: virtual double __thiscall StandardNormalDistribution::cdf(double const &)const " (?cdf@StandardNormalDistribution@@UBENABN@Z)
-     1>correlated_snd.obj : error LNK2001: unresolved external symbol "public: virtual double __thiscall StandardNormalDistribution::inv_cdf(double const &)const " (?inv_cdf@StandardNormalDistribution@@UBENABN@Z)
-     1>correlated_snd.obj : error LNK2001: unresolved external symbol "public: virtual double __thiscall StandardNormalDistribution::mean(void)const " (?mean@StandardNormalDistribution@@UBENXZ)
-     1>correlated_snd.obj : error LNK2001: unresolved external symbol "public: virtual double __thiscall StandardNormalDistribution::var(void)const " (?var@StandardNormalDistribution@@UBENXZ)
-     1>correlated_snd.obj : error LNK2001: unresolved external symbol "public: virtual double __thiscall StandardNormalDistribution::stdev(void)const " (?stdev@StandardNormalDistribution@@UBENXZ)
-     1>U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.exe : fatal error LNK1120: 8 unresolved externals
-     1>Done Building Project "U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU.vcxproj" (Build target(s)) -- FAILED.
+         MonteCarlo_Heston-CPU.vcxproj -> U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\Debug\MonteCarlo_Heston-CPU.exe
+     1>Done Building Project "U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU.vcxproj" (Build target(s)).
 
-Build FAILED.
+Build succeeded.
 
-Time Elapsed 00:00:02.04
+Time Elapsed 00:00:02.64

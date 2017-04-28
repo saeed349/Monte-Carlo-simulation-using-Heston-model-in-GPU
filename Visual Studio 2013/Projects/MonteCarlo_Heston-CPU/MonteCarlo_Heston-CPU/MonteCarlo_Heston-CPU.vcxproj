@@ -64,19 +64,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="correlated_snd.cpp" />
     <ClCompile Include="heston_mc.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="option.cpp" />
     <ClCompile Include="payoff.cpp" />
-    <ClCompile Include="statistics.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="correlated_snd.h" />
     <ClInclude Include="heston_mc.h" />
     <ClInclude Include="option.h" />
     <ClInclude Include="payoff.h" />
-    <ClInclude Include="statistics.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

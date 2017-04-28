@@ -2,36 +2,65 @@
 
 #include "payoff.h"
 #include "option.h"
-#include "correlated_snd.h"
 #include "heston_mc.h"
+
+
+
+#include <iostream>
+#include <random>
+#include <string>
+#include<time.h>
 
 void generate_normal_correlation_paths(double rho,
 	std::vector<double>& spot_normals, std::vector<double>& cor_normals) {
 	unsigned vals = spot_normals.size();
 
-	// Create the Standard Normal Distribution and random draw vectors
-	StandardNormalDistribution snd;
-	std::vector<double> snd_uniform_draws(vals, 0.0);
+	/*std::default_random_engine generator;
+	std::normal_distribution<double> distribution(0, 1);
 
-	// Simple random number generation method based on RAND
-	for (int i = 0; i<snd_uniform_draws.size(); i++) {
-		snd_uniform_draws[i] = rand() / static_cast<double>(RAND_MAX);
+	for (int i = 0; i < vals; ++i) {
+		spot_normals[i] = distribution(generator);
+	}*/
+
+	std::random_device rd;
+	std::mt19937 e2(rd());
+	std::normal_distribution<> dist(0, 1);
+
+	for (int n = 0; n < vals; ++n) {
+		spot_normals[n]=std::round(dist(e2));
+	}
+	
+	for (int i = 0; i<vals; i++) {
+		cor_normals[i] = rho * (spot_normals)[i] + cor_normals[i] * sqrt(1 - rho*rho);
 	}
 
-	// Create standard normal random draws
-	snd.random_draws(snd_uniform_draws, spot_normals);
+	//std::cout << "HJ===="<<cor_normals[223];
 
-	// Create the correlated standard normal distribution
-	CorrelatedSND csnd(rho, &spot_normals);
-	std::vector<double> csnd_uniform_draws(vals, 0.0);
+	//std::cout << "HJ====" << cor_normals[223];
 
-	// Uniform generation for the correlated SND
-	for (int i = 0; i<csnd_uniform_draws.size(); i++) {
-		csnd_uniform_draws[i] = rand() / static_cast<double>(RAND_MAX);
-	}
+	//// Create the Standard Normal Distribution and random draw vectors
+	//StandardNormalDistribution snd;
+	//std::vector<double> snd_uniform_draws(vals, 0.0);
 
-	// Now create the -correlated- standard normal draw series
-	csnd.random_draws(csnd_uniform_draws, cor_normals);
+	//// Simple random number generation method based on RAND
+	//for (int i = 0; i<snd_uniform_draws.size(); i++) {
+	//	snd_uniform_draws[i] = rand() / static_cast<double>(RAND_MAX);
+	//}
+
+	//// Create standard normal random draws
+	//snd.random_draws(snd_uniform_draws, spot_normals);
+
+	//// Create the correlated standard normal distribution
+	//CorrelatedSND csnd(rho, &spot_normals);
+	//std::vector<double> csnd_uniform_draws(vals, 0.0);
+
+	//// Uniform generation for the correlated SND
+	//for (int i = 0; i<csnd_uniform_draws.size(); i++) {
+	//	csnd_uniform_draws[i] = rand() / static_cast<double>(RAND_MAX);
+	//}
+
+	//// Now create the -correlated- standard normal draw series
+	//csnd.random_draws(csnd_uniform_draws, cor_normals);
 }
 
 int main(int argc, char **argv) {
@@ -63,6 +92,9 @@ int main(int argc, char **argv) {
 	std::vector<double> spot_prices(num_intervals, S_0);  // Vector of initial spot prices
 	std::vector<double> vol_prices(num_intervals, v_0);   // Vector of initial vol prices
 
+
+
+
 	// Monte Carlo options pricing
 	double payoff_sum = 0.0;
 	for (unsigned i = 0; i<num_sims; i++) {
@@ -71,6 +103,7 @@ int main(int argc, char **argv) {
 		hest_euler.calc_vol_path(vol_draws, vol_prices);
 		hest_euler.calc_spot_path(spot_draws, vol_prices, spot_prices);
 		payoff_sum += pOption->pay_off->operator()(spot_prices[num_intervals - 1]);
+		//std::cout << pOption->pay_off->operator()(spot_prices[num_intervals - 1]) << std::endl;
 	}
 	double option_price = (payoff_sum / static_cast<double>(num_sims)) * exp(-r*T);
 	std::cout << "Option Price: " << option_price << std::endl;
@@ -79,6 +112,9 @@ int main(int argc, char **argv) {
 	delete pOption;
 	delete pPayOffCall;
 
+
+	int i;
+	std::cin >> i;
 	return 0;
 }
 
