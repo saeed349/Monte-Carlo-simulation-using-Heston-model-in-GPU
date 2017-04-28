@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonteCarlo_Heston-CPU", "MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU.vcxproj", "{17AD0603-227F-4AD2-A282-9FE10448D728}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{17AD0603-227F-4AD2-A282-9FE10448D728}.Debug|Win32.ActiveCfg = Debug|Win32
+		{17AD0603-227F-4AD2-A282-9FE10448D728}.Debug|Win32.Build.0 = Debug|Win32
+		{17AD0603-227F-4AD2-A282-9FE10448D728}.Release|Win32.ActiveCfg = Release|Win32
+		{17AD0603-227F-4AD2-A282-9FE10448D728}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
