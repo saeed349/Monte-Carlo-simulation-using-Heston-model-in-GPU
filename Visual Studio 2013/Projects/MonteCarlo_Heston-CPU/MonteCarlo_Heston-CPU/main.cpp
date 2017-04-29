@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 	// First we create the parameter list
 	// Note that you could easily modify this code to input the parameters
 	// either from the command line or via a file
-	unsigned num_sims = 100000;   // Number of simulated asset paths
+	unsigned num_sims = 300000;   // Number of simulated asset paths
 	unsigned num_intervals = 1000;  // Number of intervals for the asset path to be sampled 
 
 	double S_0 = 100.0;    // Initial spot price

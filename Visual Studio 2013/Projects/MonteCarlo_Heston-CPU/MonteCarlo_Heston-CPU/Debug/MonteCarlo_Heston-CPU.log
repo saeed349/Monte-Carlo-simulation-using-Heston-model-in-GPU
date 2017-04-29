@@ -1,4 +1,4 @@
-﻿Build started 4/28/2017 7:18:58 PM.
+﻿Build started 4/28/2017 7:50:46 PM.
      1>Project "U:\Monte-Carlo-simulation-using-Heston-model-in-GPU\Visual Studio 2013\Projects\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU\MonteCarlo_Heston-CPU.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
@@ -15,4 +15,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.64
+Time Elapsed 00:00:02.47
