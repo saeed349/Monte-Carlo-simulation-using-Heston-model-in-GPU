@@ -8,8 +8,17 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include "dev_array.h"
 
 
+
+#include <stdio.h>
+#include <vector>
+#include <time.h>
+#include <math.h>
+#include <iostream>
+#include <time.h>
+#include <cuda_runtime.h>
 
 #define mu 0.05f
 #define sigma .2f
@@ -20,12 +29,13 @@
 #define numThreads 512
 
 
-#include <random>
+using namespace std;
+//#include <random>
 
 __global__ void europeanOption(
 	int size, int iterations,
 	float *d_price, float initialPrice, float strikePrice,
-	curandState_t *d_state)
+	curandState_t *d_state, float * d_normals)
 {
 	int tid = threadIdx.x + blockDim.x * blockIdx.x;
 	/*std::vector<double> correlated;
@@ -34,16 +44,38 @@ __global__ void europeanOption(
 	float spot_normals;
 	int temp = 0;
 	
-	std::random_device rd;
+	/*std::random_device rd;
 	std::mt19937 e2(rd());
-	std::normal_distribution<> dist(0, 1);
+	std::normal_distribution<> dist(0, 1);*/
+	double spot_draws[100];
+
+	double S_0 = 100.0;    // Initial spot price
+	double K = 100.0;      // Strike price
+	double r = 0.0319;     // Risk-free rate
+	double v_0 = 0.010201; // Initial volatility 
+	double T = 1.00;       // One year until expiry
+
+	double rho = -0.7;     // Correlation of asset and volatility
+	double kappa = 6.21;   // Mean-reversion rate
+	double theta = 0.019;  // Long run average volatility
+	double xi = 0.61;      // "Vol of vol"
 
 	if (tid < size)
 	{
-
+		size_t vec_size = iterations;
+		double dt = T ;
 		for (int i = 0; i < iterations; i++)
 		{
 			initialPrice *= 1 + mu / timespan + curand_normal(&d_state[tid])*sigma / sqrt(timespan); // initial code
+			dt = d_normals[tid];
+			
+			//Vol Path
+			/*for (int i = 1; i<vec_size; i++) {
+				double v_max = std::max(vol_path[i - 1], 0.0);
+				vol_path[i] = vol_path[i - 1] + kappa * dt * (theta - v_max) +
+					xi * sqrt(v_max * dt) * vol_draws[i - 1];*/
+
+
 			/*for (int n = 0; n < 100; ++n) {
 				temp = std::round(dist(e2));
 			}*/
@@ -85,6 +117,14 @@ __global__ void init(
 
 int main()
 {
+	int iterations = 1000;
+	dev_array<float> d_normals(iterations);
+
+	curandGenerator_t curandGenerator;
+	curandCreateGenerator(&curandGenerator, CURAND_RNG_PSEUDO_MTGP32);
+	curandSetPseudoRandomGeneratorSeed(curandGenerator, 1234ULL);
+	curandGenerateNormal(curandGenerator, d_normals.getData(), 10000, 0.0f, 1); // acutally sqrt of dt instead of 1 as variance
+
 
 	float *h_prices, *d_prices;
 
@@ -99,7 +139,7 @@ int main()
 	europeanOption << <(TRIALS - numThreads - 1) / numThreads, numThreads >> >(
 		TRIALS, 252,
 		d_prices, 100.0f, 100.0f,
-		d_state);
+		d_state, d_normals.getData());
 
 	cudaMemcpy(h_prices, d_prices, TRIALS*sizeof(float), cudaMemcpyDeviceToHost);
 
