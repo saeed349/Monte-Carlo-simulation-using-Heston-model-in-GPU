@@ -1,108 +1,92 @@
-
+//------------------------------------------------------------------------------------------------------------------------
+// Author      : Saeed Rahman
+// Title       : Vanila Call Option Pricing using Heston SDE using Monte Carlo Simulation in GPU and CPU. 
+// Description : Project done as part of FE-529 "GPU Computing in Finance" Project.
+// Date		   : 5/8/2017
+//------------------------------------------------------------------------------------------------------------------------
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <curand.h>
 #include <curand_kernel.h>
-
-
+#include <algorithm>
 #include <iostream>
 #include <cmath>
-#include <vector>
-#include "dev_array.h"
-
-
-
-#include <stdio.h>
-#include <vector>
+#include <random>
 #include <time.h>
-#include <math.h>
-#include <iostream>
-#include <time.h>
-#include <cuda_runtime.h>
 
-#define mu 0.05f
-#define sigma .2f
-#define timespan 252.0f
+#define TRIALS 100000
+#define numThreads 256
 
-
-#define TRIALS 10000
-#define numThreads 512
-
-
-using namespace std;
-//#include <random>
-
+// Kernel Implementation-------------------------------------------------------------------------------------------------
 __global__ void europeanOption(
 	int size, int iterations,
 	float *d_price, float initialPrice, float strikePrice,
-	curandState_t *d_state, float * d_normals)
+	curandState_t *d_state)
 {
 	int tid = threadIdx.x + blockDim.x * blockIdx.x;
-	/*std::vector<double> correlated;
-	double rho = .6;*/
 
-	float spot_normals;
-	int temp = 0;
-	
-	/*std::random_device rd;
-	std::mt19937 e2(rd());
-	std::normal_distribution<> dist(0, 1);*/
-	double spot_draws[100];
+	double S_0 = 100;
+	double K = 100;
+	double r = .0319;
+	double v_0 = .010201;
+	double T = 1;
+	double dt = T / iterations;
+	double rho = -.7;
+	double kappa = 6.21;
+	double theta = .019;
+	double xi = .61;
 
-	double S_0 = 100.0;    // Initial spot price
-	double K = 100.0;      // Strike price
-	double r = 0.0319;     // Risk-free rate
-	double v_0 = 0.010201; // Initial volatility 
-	double T = 1.00;       // One year until expiry
+	float random1=0;
+	float random2=0;
+	float corr_random = 0;
 
-	double rho = -0.7;     // Correlation of asset and volatility
-	double kappa = 6.21;   // Mean-reversion rate
-	double theta = 0.019;  // Long run average volatility
-	double xi = 0.61;      // "Vol of vol"
+	double vol_path = v_0;
+	double spot_path = S_0;
+	double v_max=0;
+
+	//  variable to store the random variable generated using curand
+	float2 random;
 
 	if (tid < size)
 	{
-		size_t vec_size = iterations;
-		double dt = T ;
+		vol_path = v_0;
+		spot_path = S_0;
+		random1 = 0;
+		random2 = 0;
+		corr_random = 0;
 		for (int i = 0; i < iterations; i++)
 		{
-			initialPrice *= 1 + mu / timespan + curand_normal(&d_state[tid])*sigma / sqrt(timespan); // initial code
-			dt = d_normals[tid];
-			
-			//Vol Path
-			/*for (int i = 1; i<vec_size; i++) {
-				double v_max = std::max(vol_path[i - 1], 0.0);
-				vol_path[i] = vol_path[i - 1] + kappa * dt * (theta - v_max) +
-					xi * sqrt(v_max * dt) * vol_draws[i - 1];*/
+			if (vol_path > 0)
+				v_max = vol_path;
+			else
+				v_max = 0;
 
+			vol_path = vol_path + kappa*dt*(theta - v_max) + xi*sqrt(v_max*dt)*random1;
 
-			/*for (int n = 0; n < 100; ++n) {
-				temp = std::round(dist(e2));
-			}*/
-			/*
-			1) Use the correlated brownian motion to create the vol_path
-			2) Use that vol path to create the spot_path
-			3) Use the vol_path and spot_path to create asset path
-			4)
-			*/
-				
+			spot_path = spot_path*exp((r - .5*v_max)*dt + sqrt(v_max*dt)*corr_random);
 
-			//correlated[i] = rho * (curand_normal(&d_state[tid]))[i] + correlated[i] * sqrt(1 - rho*rho);
+			// creating two independent standard normal random values
+			random = curand_normal2(&d_state[tid]);
+			random1 = random.x;
+			random2 = random.y;
+			// creating the correlated brownian motion
+			corr_random = rho * random1 + sqrt(1 - rho * rho) * random2;
 
-			/*for (int i = 0; i<vals; i++) {
-				correlated[i] = rho * (spot_normals)[i] + correlated[i] * sqrt(1 - rho*rho);
-			}*/
 		}
-
+		initialPrice = spot_path;
+		// calculating the payoff
 		d_price[tid] = initialPrice - strikePrice;
 		if (d_price[tid] < 0)
 		{
 			d_price[tid] = 0;
+
 		}
 	}
 
 }
 
+
+// setting the init function to set the seed for curand
 __global__ void init(
 	unsigned int seed,
 	curandState_t *d_state)
@@ -115,33 +99,102 @@ __global__ void init(
 }
 
 
+// CPU implementation of the Heston MC----------------------------------------------------------------------------------------------------------
+void CPU(int size, int iterations, float *d_price)
+{
+	double S_0 = 100;
+	double K = 100;
+	double strikePrice = K;
+	double r = .0319;
+	double v_0 = .010201;
+	double T = 1;
+	double dt = T / iterations;
+	double rho = -.7;
+	double kappa = 6.21;
+	double theta = .019;
+	double xi = .61;
+
+	float random1 = 0;
+	float random2 = 0;
+	float corr_random = 0;
+
+	double vol_path = v_0;
+	double spot_path = S_0;
+	double v_max;
+
+	double initialPrice = 0;
+
+	//using the mersenne twister engine to create the random number
+	std::random_device rd;
+	std::mt19937 e2(rd());
+	std::normal_distribution<>dist(0, 1);
+
+	for (int j = 0; j < size; j++)
+	{
+		
+		vol_path = v_0;
+		spot_path = S_0;
+		for (int i = 0; i < iterations; i++)
+		{
+			
+			v_max = std::max(vol_path, 0.0);
+			vol_path = vol_path + kappa*dt*(theta - v_max) + xi*sqrt(v_max*dt)*random1;
+
+			spot_path = spot_path*exp((r - .5*v_max)*dt + sqrt(v_max*dt)*corr_random);
+
+			// creating the independent and the correlated brownian motion
+			random1 = dist(e2);
+			random2 = dist(e2);
+			corr_random = rho * random1 + sqrt(1 - rho * rho) * random2;
+
+		}
+		// calculating the payoff
+		initialPrice = spot_path;
+		d_price[j] = initialPrice - strikePrice;
+		if (d_price[j] < 0)
+		{
+			d_price[j] = 0;
+		}
+	}
+
+
+}
 int main()
 {
-	int iterations = 1000;
-	dev_array<float> d_normals(iterations);
 
-	curandGenerator_t curandGenerator;
-	curandCreateGenerator(&curandGenerator, CURAND_RNG_PSEUDO_MTGP32);
-	curandSetPseudoRandomGeneratorSeed(curandGenerator, 1234ULL);
-	curandGenerateNormal(curandGenerator, d_normals.getData(), 10000, 0.0f, 1); // acutally sqrt of dt instead of 1 as variance
-
-
+	int number_of_steps = 252;
 	float *h_prices, *d_prices;
+
+	clock_t beginGPU = clock();
 
 	h_prices = new float[TRIALS];
 	cudaMalloc((void**)&d_prices, TRIALS*sizeof(float));
 
 	curandState_t *d_state;
+
 	cudaMalloc((void**)&d_state, TRIALS * sizeof(curandState_t));
+
+	clock_t beginGPUKernel = clock();
 
 	init << < (TRIALS - numThreads - 1) / numThreads, numThreads >> >(time(0), d_state);
 
+	// calling the kernel
+
 	europeanOption << <(TRIALS - numThreads - 1) / numThreads, numThreads >> >(
-		TRIALS, 252,
+		TRIALS, number_of_steps,
 		d_prices, 100.0f, 100.0f,
-		d_state, d_normals.getData());
+		d_state);
+
+
+	clock_t endGPUKernel = clock();
 
 	cudaMemcpy(h_prices, d_prices, TRIALS*sizeof(float), cudaMemcpyDeviceToHost);
+
+	clock_t endGPU = clock();
+
+	double elapsed_secs_GPU = double(endGPU - beginGPU) / float(CLOCKS_PER_SEC);
+
+	double elapsed_secs_GPU_kernel = double(endGPUKernel - beginGPUKernel) / float(CLOCKS_PER_SEC);
 
 	float price = 0;
 
@@ -158,14 +211,51 @@ int main()
 
 	price /= TRIALS;
 
-	std::cout << "The Theoretical Price of the Option is " << price << "." << std::endl;
+	std::cout << "The Theoretical Price of the Option simulated in GPU = " << price << "." << std::endl;
 
 	std::cout << "Count is " << count << "." << std::endl;
+
+	std::cout << "The time taken for the GPU Simulation including memory transfer=" << elapsed_secs_GPU << std::endl;
+
+	std::cout << "The time taken for the GPU Kernel=" << elapsed_secs_GPU_kernel << std::endl;
 
 	delete[] h_prices;
 	cudaFree(d_state); cudaFree(d_prices);
 
 	cudaDeviceReset();
+
+
+	//CPU Implementation--------------------------------------------------------------------------------------------------------------
+
+	
+	clock_t beginCPU = clock();
+	float cpu_price = 0;
+	int cpu_count = 0;
+	float *cpu_prices;
+	h_prices = new float[TRIALS];
+
+	CPU(TRIALS, number_of_steps, h_prices);
+	
+	clock_t endCPU = clock();
+	double elapsed_secs_CPU = double(endCPU - beginCPU) / float(CLOCKS_PER_SEC);
+
+	for (int i = 0; i < TRIALS; i++)
+	{
+		cpu_price += h_prices[i];
+		if (h_prices[i] > 0)
+		{
+			cpu_count += 1;
+		}
+	}
+	cpu_price /= cpu_count;
+
+	
+
+	std::cout <<std::endl<< "The Theoretical Price of the Option simulated in CPU =" << price << "." << std::endl;
+
+	std::cout << "The time taken for the CPU Simulation=" << elapsed_secs_CPU << std::endl;
+
+	std::cout << "count=" << cpu_count << std::endl;
 
 	int i;
 	std::cin >> i;

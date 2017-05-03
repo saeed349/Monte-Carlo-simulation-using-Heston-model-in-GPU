@@ -101,3 +101,35 @@ private:
 };
 
 #endif
+for (int j = 0; j < size; j++)
+{
+
+	vol_path = v_0;
+	spot_path = S_0;
+	for (int i = 0; i < iterations; i++)
+	{
+
+		v_max = std::max(vol_path, 0.0);
+
+		//Vt = Vt - kappa_ * dt * (std::max(0.0, Vt) - theta_) + vol_ * sqrt(std::max(0.0, Vt)) * Vhold * sqdt;
+		vol_path = vol_path + kappa*dt*(theta - v_max) + xi*sqrt(v_max*dt)*random1;
+
+		spot_path = spot_path*exp((r - .5*v_max)*dt + sqrt(v_max*dt)*corr_random);
+
+
+		random1 = dist(e2);
+		random2 = dist(e2);
+		corr_random = rho * random1 + sqrt(1 - rho * rho) * random2;
+
+		//std::cout << "Vol="<<vol_path << std::endl;
+		//std::cout << "spot=" << spot_path << std::endl;
+	}
+	initialPrice = spot_path;
+	d_price[j] = initialPrice - strikePrice;
+	if (d_price[j] < 0)
+	{
+		d_price[j] = 0;
+	}
+	/*std::cout << "Count-" << j << std::endl;
+	std::cout << "Price=" << d_price[j] << std::endl;*/
+}
