@@ -15,12 +15,12 @@
 #include <time.h>
 
 #define TRIALS 100000
-#define numThreads 256
+#define numThreads 512
 
 // Kernel Implementation-------------------------------------------------------------------------------------------------
 __global__ void europeanOption(
 	int size, int iterations,
-	float *d_price, float initialPrice, float strikePrice,
+	float *d_price,
 	curandState_t *d_state)
 {
 	int tid = threadIdx.x + blockDim.x * blockIdx.x;
@@ -73,9 +73,8 @@ __global__ void europeanOption(
 			corr_random = rho * random1 + sqrt(1 - rho * rho) * random2;
 
 		}
-		initialPrice = spot_path;
 		// calculating the payoff
-		d_price[tid] = initialPrice - strikePrice;
+		d_price[tid] = spot_path - K;
 		if (d_price[tid] < 0)
 		{
 			d_price[tid] = 0;
@@ -134,6 +133,9 @@ void CPU(int size, int iterations, float *d_price)
 		
 		vol_path = v_0;
 		spot_path = S_0;
+		random1 = 0;
+		random2 = 0;
+		corr_random = 0;
 		for (int i = 0; i < iterations; i++)
 		{
 			
@@ -146,6 +148,8 @@ void CPU(int size, int iterations, float *d_price)
 			random1 = dist(e2);
 			random2 = dist(e2);
 			corr_random = rho * random1 + sqrt(1 - rho * rho) * random2;
+			/*std::cout << "random " << random1<< random2 << corr_random << std::endl;*/
+			
 
 		}
 		// calculating the payoff
@@ -182,7 +186,7 @@ int main()
 
 	europeanOption << <(TRIALS - numThreads - 1) / numThreads, numThreads >> >(
 		TRIALS, number_of_steps,
-		d_prices, 100.0f, 100.0f,
+		d_prices,
 		d_state);
 
 
@@ -231,27 +235,27 @@ int main()
 	clock_t beginCPU = clock();
 	float cpu_price = 0;
 	int cpu_count = 0;
-	float *cpu_prices;
-	h_prices = new float[TRIALS];
+	float *option_prices;
+	option_prices = new float[TRIALS];
 
-	CPU(TRIALS, number_of_steps, h_prices);
+	CPU(TRIALS, number_of_steps, option_prices);
 	
 	clock_t endCPU = clock();
 	double elapsed_secs_CPU = double(endCPU - beginCPU) / float(CLOCKS_PER_SEC);
 
 	for (int i = 0; i < TRIALS; i++)
 	{
-		cpu_price += h_prices[i];
-		if (h_prices[i] > 0)
+		cpu_price += option_prices[i];
+		if (option_prices[i] > 0)
 		{
 			cpu_count += 1;
 		}
 	}
-	cpu_price /= cpu_count;
+	cpu_price /= TRIALS;
 
 	
 
-	std::cout <<std::endl<< "The Theoretical Price of the Option simulated in CPU =" << price << "." << std::endl;
+	std::cout <<std::endl<< "The Theoretical Price of the Option simulated in CPU =" << cpu_price << "." << std::endl;
 
 	std::cout << "The time taken for the CPU Simulation=" << elapsed_secs_CPU << std::endl;
 
