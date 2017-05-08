@@ -19,7 +19,7 @@
 
 // Kernel Implementation-------------------------------------------------------------------------------------------------
 __global__ void europeanOption(
-	int size, int iterations,
+	int iterations,int size,
 	float *d_price,
 	curandState_t *d_state)
 {
@@ -47,14 +47,14 @@ __global__ void europeanOption(
 	//  variable to store the random variable generated using curand
 	float2 random;
 
-	if (tid < size)
+	if (tid < iterations)
 	{
 		vol_path = v_0;
 		spot_path = S_0;
 		random1 = 0;
 		random2 = 0;
 		corr_random = 0;
-		for (int i = 0; i < iterations; i++)
+		for (int i = 0; i < size; i++)
 		{
 			if (vol_path > 0)
 				v_max = vol_path;
