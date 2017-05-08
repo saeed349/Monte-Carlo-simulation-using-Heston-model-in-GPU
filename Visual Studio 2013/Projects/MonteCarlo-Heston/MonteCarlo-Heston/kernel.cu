@@ -99,7 +99,7 @@ __global__ void init(
 
 
 // CPU implementation of the Heston MC----------------------------------------------------------------------------------------------------------
-void CPU(int size, int iterations, float *d_price)
+void CPU(int iterations,int size,  float *d_price)
 {
 	double S_0 = 100;
 	double K = 100;
@@ -128,7 +128,7 @@ void CPU(int size, int iterations, float *d_price)
 	std::mt19937 e2(rd());
 	std::normal_distribution<>dist(0, 1);
 
-	for (int j = 0; j < size; j++)
+	for (int j = 0; j < iterations; j++)
 	{
 		
 		vol_path = v_0;
@@ -136,7 +136,7 @@ void CPU(int size, int iterations, float *d_price)
 		random1 = 0;
 		random2 = 0;
 		corr_random = 0;
-		for (int i = 0; i < iterations; i++)
+		for (int i = 0; i < size; i++)
 		{
 			
 			v_max = std::max(vol_path, 0.0);
